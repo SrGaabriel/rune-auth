@@ -25,19 +25,18 @@ val RuneAuth.premium get() = command("original", "premium") {
             return@executor
         }
 
+        val wasAccountPremium = account.premium
         accountRepository.edit(account) {
-            if (account.premium) {
-                account.premium = false
-                source.sendMessage(locale["commands.premium.disabled"])
-                return@edit
-            }
-
-            val session = loginSessions[source.sessionId]
-            if (session?.verified != true) {
-                source.sendMessage(locale["commands.premium.non-premium"])
-                return@edit
-            }
-            account.premium = true
+            account.premium = !wasAccountPremium
+        }
+        if (wasAccountPremium) {
+            source.sendMessage(locale["commands.premium.disabled"])
+            return@executor
+        }
+        val session = loginSessions[source.sessionId]
+        if (session?.verified != true) {
+            source.sendMessage(locale["commands.premium.non-premium"])
+            return@executor
         }
         source.sendMessage(locale["commands.premium.enabled"])
     }

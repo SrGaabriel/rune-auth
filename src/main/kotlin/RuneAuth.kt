@@ -54,9 +54,6 @@ class RuneAuth: RunePlugin() {
         install(Databases) {
             connectIntoCore()
             afterConnecting {
-                transaction {
-                    SchemaUtils.drop(Accounts)
-                }
                 tables(Accounts)
             }
         }
@@ -73,6 +70,21 @@ class RuneAuth: RunePlugin() {
         Bukkit.getPluginManager().registerEvents(AuthListener(this), this)
         Bukkit.getPluginManager().registerEvents(SkinListener(this), this)
 
+//        val commandLogRegex = Regex("""(\w+) issued server command: /(.+)""")
+//        Bukkit.getServer().logger.setFilter {
+//            // With regex, let's check if it is like this `X issued server command: /{command}`, and return the command
+//            val match = commandLogRegex.matchEntire(it.message)
+//            val player = match?.groupValues?.get(1)
+//            val command = match?.groupValues?.get(2)
+//            if (player != null && command != null) {
+//                val authCommand = feature(Commands).repository.search(command)
+//                if (authCommand != null) {
+//                    it.message = "$player issued server command: /$command"
+//                }
+//            }
+//            true
+//        }
+
         makeLocale()
     }
 
@@ -82,6 +94,7 @@ class RuneAuth: RunePlugin() {
             this["commands.already-logged"] = "&c&lERRO &fVocê já está autenticado no servidor."
             this["commands.already-registered"] = "&c&lERRO &fVocê já tem uma conta cadastrada no servidor."
             this["commands.no-account"] = "&c&lERRO &fVocê não tem uma conta. Use &c/registrar <senha>&f para criar uma."
+            this["commands.premium-tip"] = "&9&lDICA &fUsuários com Minecraft original não precisam se autenticar. Use &9/original &fpara ativar."
             this["commands.incorrect-password"] = "&c&lERRO &fSenha incorreta."
             this["commands.attempts-left"] = "&fVocê tem mais &c{0} &ftentativas."
             this["commands.successful-login"] = "&a&lSUCESSO &fVocê foi autenticado com sucesso."

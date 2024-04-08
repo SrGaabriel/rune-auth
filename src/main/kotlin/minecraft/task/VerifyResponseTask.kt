@@ -103,8 +103,6 @@ class VerifyResponseTask(
                 val correspondingAccount = transaction {
                     Account.findById(realAccountUuid)
                 }
-                println(session.requestedUuid)
-                println(realAccountUuid)
                 plugin.logger.info(correspondingAccount.toString())
                 plugin.logger.info(correspondingAccount?.premium.toString())
                 plugin.logger.info(correspondingAccount?.id?.value.toString())

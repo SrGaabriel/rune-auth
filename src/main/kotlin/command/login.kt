@@ -2,6 +2,7 @@ package com.runerealms.auth.command
 
 import com.runerealms.auth.RuneAuth
 import com.runerealms.auth.event.PlayerAuthEvent
+import com.runerealms.auth.minecraft.sessionId
 import com.runerealms.auth.struct.AuthState
 import com.runerealms.core.feature.command.struct.types.ArgumentType
 import com.runerealms.core.feature.command.util.command
@@ -52,6 +53,12 @@ val RuneAuth.login get() = command("login", "logar") {
         Bukkit.getPluginManager().callEvent(event)
 
         source.sendMessage(locale["commands.successful-login"])
+
+        val hasPremiumAccount = loginSessions[source.sessionId]?.verified == true
+        if (hasPremiumAccount && !existingAccount.premium) {
+            source.sendActionBar(Component.text(locale["commands.premium-tip"]))
+        }
+
         source.clearTitle()
         source.showTitle(
             Title.title(

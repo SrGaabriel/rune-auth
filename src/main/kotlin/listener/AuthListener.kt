@@ -102,7 +102,7 @@ class AuthListener(private val plugin: RuneAuth): Listener {
                 }
             }, 30.seconds.inWholeTicks)
 
-            event.player.addPotionEffect(PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 1.hours.inWholeTicksInt, 1))
+            event.player.addPotionEffect(PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 1.hours.inWholeTicksInt, 9))
 
             if (account == null) {
                 event.player.showTitle(Title.title(

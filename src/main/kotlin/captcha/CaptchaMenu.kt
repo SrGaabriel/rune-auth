@@ -46,7 +46,7 @@ val RuneAuth.categoryCaptcha get() = menu(
     onClose {
         val completed = view.data["completed"] as? Boolean ?: error("Invalid completed state")
         if (!completed)
-            reopen(false)
+            return@onClose reopen(false)
 
         captchaManager.onSuccessfulCaptcha(player, view.data["hashed-password"] as? String ?: error("Invalid hashed password"))
     }
