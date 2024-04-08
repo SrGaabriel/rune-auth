@@ -10,11 +10,8 @@ import com.runerealms.core.ext.inWholeTicks
 import com.runerealms.core.ext.inWholeTicksInt
 import com.runerealms.core.ext.ticks
 import com.runerealms.core.feature.command.Commands
-import com.runerealms.core.feature.menu.Menus
 import io.papermc.paper.event.player.AsyncChatEvent
-import kotlinx.serialization.Serializable
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.Title.Times
@@ -23,7 +20,6 @@ import org.bukkit.Sound
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.event.inventory.InventoryOpenEvent
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
 import org.bukkit.event.player.PlayerJoinEvent
@@ -31,7 +27,6 @@ import org.bukkit.event.player.PlayerMoveEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.potion.PotionEffect
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.util.UUID
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
@@ -54,7 +49,7 @@ class AuthListener(private val plugin: RuneAuth): Listener {
     fun onPlayerChat(event: AsyncChatEvent) {
         if (event.player.authState(plugin) is AuthState.Unauthenticated) {
             event.isCancelled = true
-            event.player.sendMessage("§c§lERRO §fVocê precisa estar logado para falar no chat.")
+            event.player.sendMessage(plugin.locale["events.chat-blocked"])
         }
     }
 
@@ -67,7 +62,7 @@ class AuthListener(private val plugin: RuneAuth): Listener {
             }
 
             event.isCancelled = true
-            event.player.sendMessage("§c§lERRO §fVocê precisa estar logado para executar comandos.")
+            event.player.sendMessage(plugin.locale["events.command-blocked"])
         }
     }
 
@@ -90,8 +85,8 @@ class AuthListener(private val plugin: RuneAuth): Listener {
                 plugin.authenticationStates[event.player.uniqueId] = AuthState.Authenticated(true)
                 event.player.showTitle(
                     Title.title(
-                        Component.text("§6§lORIGINAL").decorate(TextDecoration.BOLD),
-                        Component.text("Sua conta é §6original§f, você não precisa se autenticar")
+                        Component.text(plugin.locale["titles.premium.title"]),
+                        Component.text(plugin.locale["titles.premium.subtitle"]),
                     )
                 )
                 event.player.removePotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS)
@@ -103,12 +98,7 @@ class AuthListener(private val plugin: RuneAuth): Listener {
 
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, {
                 if (event.player.authState(plugin) is AuthState.Unauthenticated) {
-                    event.player.kick(
-                        Component.text("§c§lERRO")
-                            .appendNewline()
-                            .appendNewline()
-                            .append(Component.text("Você demorou muito tempo para logar"))
-                    )
+                    event.player.kick(Component.text(plugin.locale["kick.login-timeout"]))
                 }
             }, 30.seconds.inWholeTicks)
 
@@ -116,35 +106,23 @@ class AuthListener(private val plugin: RuneAuth): Listener {
 
             if (account == null) {
                 event.player.showTitle(Title.title(
-                    Component.text("REGISTRO").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD),
-                    Component
-                        .text("Faça seu cadastro utilizando ")
-                        .color(NamedTextColor.WHITE)
-                        .append(
-                            Component.text("/registrar <senha>").color(NamedTextColor.YELLOW)
-                        )
-                        .append(Component.text(" para começar a jogar.")),
-                        Times.times(5.ticks.toJavaDuration(), 30.seconds.toJavaDuration(), 10.ticks.toJavaDuration())
+                    Component.text(plugin.locale["titles.ask-register.title"]),
+                    Component.text(plugin.locale["titles.ask-register.subtitle"]),
+                    Times.times(5.ticks.toJavaDuration(), 30.seconds.toJavaDuration(), 10.ticks.toJavaDuration())
                 ))
                 return@transaction
             }
 
             event.player.showTitle(Title.title(
-                Component.text("LOGIN").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD),
-                Component
-                    .text("Faça seu login utilizando ")
-                    .color(NamedTextColor.WHITE)
-                    .append(
-                        Component.text("/login <senha>").color(NamedTextColor.YELLOW)
-                    )
-                    .append(Component.text(" para começar a jogar.")),
-                    Times.times(5.ticks.toJavaDuration(), 30.seconds.toJavaDuration(), 10.ticks.toJavaDuration())
+                Component.text(plugin.locale["titles.ask-login.title"]),
+                Component.text(plugin.locale["titles.ask-login.subtitle"]),
+                Times.times(5.ticks.toJavaDuration(), 20.seconds.toJavaDuration(), 10.ticks.toJavaDuration())
             ))
 
             if (account.latestUsername != event.player.name) {
                 val oldName = account.latestUsername
                 account.latestUsername = event.player.name
-                event.player.sendMessage("§3§lMIGRAÇÃO §7Seus dados da sua conta anterior §3${oldName} §fforam migrados com sucesso!")
+                event.player.sendMessage(plugin.locale["events.migrated"])
             }
         }
     }

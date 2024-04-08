@@ -15,31 +15,30 @@ val RuneAuth.premium get() = command("original", "premium") {
         val authState = authenticationStates[source.uniqueId]
 
         if (authState !is AuthState.Authenticated) {
-            source.sendMessage("§c§lERRO §fVocê não está logado.")
+            source.sendMessage(locale["commands.not-logged"])
             return@executor
         }
 
-        transaction {
-            val account = Account.findById(source.uniqueId)
-            if (account == null) {
-                source.sendMessage("§c§lERRO §fVocê não tem uma conta registrada.")
-                return@transaction
-            }
+        val account = accountRepository[source.uniqueId]
+        if (account == null) {
+            source.sendMessage(locale["commands.no-account"])
+            return@executor
+        }
 
+        accountRepository.edit(account) {
             if (account.premium) {
                 account.premium = false
-                source.sendMessage("§c§lDESATIVADO §fVocê §cdesativou §fo modo de autenticação original.")
-                return@transaction
+                source.sendMessage(locale["commands.premium.disabled"])
+                return@edit
             }
 
             val session = loginSessions[source.sessionId]
             if (session?.verified != true) {
-                source.sendMessage("§c§lERRO §fVocê não está logado com uma conta original.")
-                return@transaction
+                source.sendMessage(locale["commands.premium.non-premium"])
+                return@edit
             }
-
             account.premium = true
-            source.sendMessage("§6§lATIVADO §fVocê §6ativou §fo modo de autenticação original.")
         }
+        source.sendMessage(locale["commands.premium.enabled"])
     }
 }
