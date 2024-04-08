@@ -1,0 +1,37 @@
+[versions]
+kotlin = "1.9.22"
+serialization = "1.6.3"
+
+shadow = "8.1.1"
+paperweight = "1.5.11"
+
+purpur = "1.19.4-R0.1-SNAPSHOT"
+
+adventure = "4.12.0"
+plugin-yml = "0.6.0"
+postgresql = "42.7.3"
+protocol-lib = "5.0.0"
+
+bcrypt =  "0.10.2"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+plugin-yml = { id = "net.minecrell.plugin-yml.bukkit", version.ref = "plugin.yml" }
+
+paperweight-userdev = { id = "io.papermc.paperweight.userdev", version.ref = "paperweight" }
+
+[libraries]
+purpur = { module = "org.purpurmc.purpur:purpur-api", version.ref = "purpur" }
+purpur-dev-bundle = { module = "org.purpurmc.purpur:dev-bundle", version.ref = "purpur" }
+
+adventure-kotlin = { module = "net.kyori:adventure-extra-kotlin", version.ref = "adventure" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+kotlin-reflection = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+
+bcrypt = { module = "at.favre.lib:bcrypt", version.ref = "bcrypt" }
+protocol = { module = "com.comphenix.protocol:ProtocolLib", version.ref = "protocol-lib" }
+
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
