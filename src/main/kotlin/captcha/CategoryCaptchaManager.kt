@@ -39,7 +39,6 @@ open class CategoryCaptchaManager(private val plugin: RuneAuth): CaptchaManager 
             player,
             newAccount
         )
-
         Bukkit.getPluginManager().callEvent(event)
 
         player.sendMessage(plugin.locale["commands.successful-register"])

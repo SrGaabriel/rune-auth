@@ -74,56 +74,71 @@ class AuthListener(private val plugin: RuneAuth): Listener {
 
     @EventHandler
     fun onPlayerJoin(event: PlayerJoinEvent) {
-        transaction {
-            val account = Account.findById(event.player.uniqueId)
+        val account = plugin.accountRepository[event.player.uniqueId]
 
-            val premiumSession = plugin.loginSessions[event.player.sessionId]
-            if (account != null && account.premium && premiumSession?.verified == true) {
-                val authEvent = PlayerAuthEvent(event.player, null)
-                Bukkit.getPluginManager().callEvent(authEvent)
+        val premiumSession = plugin.loginSessions[event.player.sessionId]
+        if (account != null && account.premium && premiumSession?.verified == true) {
+            val authEvent = PlayerAuthEvent(event.player, null)
+            Bukkit.getPluginManager().callEvent(authEvent)
 
-                plugin.authenticationStates[event.player.uniqueId] = AuthState.Authenticated(true)
-                event.player.showTitle(
-                    Title.title(
-                        Component.text(plugin.locale["titles.premium.title"]),
-                        Component.text(plugin.locale["titles.premium.subtitle"]),
-                    )
+            plugin.authenticationStates[event.player.uniqueId] = AuthState.Authenticated(true)
+            event.player.showTitle(
+                Title.title(
+                    Component.text(plugin.locale["titles.premium.title"]),
+                    Component.text(plugin.locale["titles.premium.subtitle"]),
                 )
-                event.player.removePotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS)
-                event.player.playSound(event.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
-                return@transaction
+            )
+            event.player.removePotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS)
+            event.player.playSound(event.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1f, 1f)
+            return
+        }
+
+        plugin.authenticationStates[event.player.uniqueId] =
+            AuthState.Unauthenticated(attempts = 0, captcha = false)
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, {
+            if (event.player.authState(plugin) is AuthState.Unauthenticated) {
+                event.player.kick(Component.text(plugin.locale["kick.login-timeout"]))
             }
+        }, 30.seconds.inWholeTicks)
 
-            plugin.authenticationStates[event.player.uniqueId] = AuthState.Unauthenticated(attempts = 0, captcha = false)
+        event.player.addPotionEffect(
+            PotionEffect(
+                org.bukkit.potion.PotionEffectType.BLINDNESS,
+                1.hours.inWholeTicksInt,
+                9
+            )
+        )
 
-            Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, {
-                if (event.player.authState(plugin) is AuthState.Unauthenticated) {
-                    event.player.kick(Component.text(plugin.locale["kick.login-timeout"]))
-                }
-            }, 30.seconds.inWholeTicks)
-
-            event.player.addPotionEffect(PotionEffect(org.bukkit.potion.PotionEffectType.BLINDNESS, 1.hours.inWholeTicksInt, 9))
-
-            if (account == null) {
-                event.player.showTitle(Title.title(
+        if (account == null) {
+            event.player.showTitle(
+                Title.title(
                     Component.text(plugin.locale["titles.ask-register.title"]),
                     Component.text(plugin.locale["titles.ask-register.subtitle"]),
-                    Times.times(5.ticks.toJavaDuration(), 30.seconds.toJavaDuration(), 10.ticks.toJavaDuration())
-                ))
-                return@transaction
-            }
+                    Times.times(
+                        5.ticks.toJavaDuration(),
+                        30.seconds.toJavaDuration(),
+                        10.ticks.toJavaDuration()
+                    )
+                )
+            )
+            return
+        }
 
-            event.player.showTitle(Title.title(
+        event.player.showTitle(
+            Title.title(
                 Component.text(plugin.locale["titles.ask-login.title"]),
                 Component.text(plugin.locale["titles.ask-login.subtitle"]),
                 Times.times(5.ticks.toJavaDuration(), 20.seconds.toJavaDuration(), 10.ticks.toJavaDuration())
-            ))
+            )
+        )
 
-            if (account.latestUsername != event.player.name) {
-                val oldName = account.latestUsername
+        if (account.latestUsername != event.player.name) {
+            val oldName = account.latestUsername
+            plugin.accountRepository.edit(account) {
                 account.latestUsername = event.player.name
-                event.player.sendMessage(plugin.locale["events.migrated"])
             }
+            event.player.sendMessage(plugin.locale.key("events.migrated", oldName))
         }
     }
 

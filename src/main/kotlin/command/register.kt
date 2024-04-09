@@ -20,11 +20,11 @@ val RuneAuth.register get() = command("register", "registrar", "registro") {
 
         if (password.length < 6) {
             source.playSound(source.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
-            source.sendMessage(locale["commands.password-too-short"])
+            source.sendMessage(locale.key("commands.register.password-too-short", "6"))
             return@executor
         } else if (password.length > 16) {
             source.playSound(source.location, Sound.ENTITY_VILLAGER_NO, 1f, 1f)
-            source.sendMessage(locale["commands.password-too-long"])
+            source.sendMessage(locale.key("commands.register.password-too-long", "16"))
             return@executor
         }
 

@@ -100,9 +100,7 @@ class VerifyResponseTask(
                 encryptConnection(session, requestedUsername, response)
             } else {
                 val realAccountUuid = UUID.nameUUIDFromBytes(("OfflinePlayer:$requestedUsername").toByteArray(Charsets.UTF_8))
-                val correspondingAccount = transaction {
-                    Account.findById(realAccountUuid)
-                }
+                val correspondingAccount = plugin.accountRepository.get(realAccountUuid)
                 plugin.logger.info(correspondingAccount.toString())
                 plugin.logger.info(correspondingAccount?.premium.toString())
                 plugin.logger.info(correspondingAccount?.id?.value.toString())
